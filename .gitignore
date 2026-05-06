@@ -1,0 +1,20 @@
+# Entornos virtuales y dependencias
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+
+# Variables de entorno (Seguridad)
+.env
+.env.*
+
+# Archivos basura de Rasa
+models/
+.rasa/
+*.tar.gz
+
+# Archivos del sistema y Editores
+.vscode/
+.idea/
+.DS_Store
