@@ -27,20 +27,24 @@ async def receive_message(request: Request):
         print("⚠️ Advertencia: TikTok envió un payload que no es JSON válido.")
     
     # Verificamos si es un evento de nuevo mensaje
-    if body.get("event") == "im.message.receive":
-        data = body.get("data", {})
-        sender_id = data.get("sender_id")
+    if body.get("event") == "im.message.receive" or body.get("event") == "tiktok.im.message.receive":
+        import json
         
-        # Extraemos el texto del mensaje
-        message_data = data.get("message", {})
-        user_message = message_data.get("text")
+        # En TikTok, los detalles del mensaje vienen como un string JSON serializado en 'content'
+        content_str = body.get("content", "{}")
+        try:
+            content_data = json.loads(content_str)
+        except json.JSONDecodeError:
+            content_data = {}
+            
+        sender_id = content_data.get("sender_id")
+        user_message = content_data.get("text")
+        
+        # El receptor (tu cuenta comercial) viene en la raíz del payload
+        receiver_id = body.get("user_openid")
         
         if sender_id and user_message:
             print(f"\n[TIKTOK DM] Recibido de {sender_id}: {user_message}")
-            
-            # TODO: Asegúrate de extraer el ID de tu cuenta (el destinatario) del payload real de TikTok.
-            # En la API real, podría venir en `data.get("receiver_id")` o similar.
-            receiver_id = data.get("receiver_id") or "123456789" # ID de ejemplo
             
             # Obtenemos el token correspondiente a la cuenta
             from app.core.config import settings
