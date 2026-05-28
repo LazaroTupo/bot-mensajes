@@ -8,7 +8,23 @@ async def receive_message(request: Request):
     """
     Endpoint para los Webhooks de TikTok.
     """
-    body = await request.json()
+    # ====== LOGGING DE DEPURACIÓN ======
+    print(f"\n{'='*40}")
+    print("🔔 NUEVO WEBHOOK RECIBIDO DE TIKTOK")
+    print(f"Headers: {dict(request.headers)}")
+    try:
+        raw_body = await request.body()
+        print(f"Raw Body: {raw_body.decode('utf-8')}")
+    except Exception as e:
+        print(f"No se pudo leer el Raw Body: {e}")
+    print(f"{'='*40}\n")
+    # ===================================
+    
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+        print("⚠️ Advertencia: TikTok envió un payload que no es JSON válido.")
     
     # Verificamos si es un evento de nuevo mensaje
     if body.get("event") == "im.message.receive":
