@@ -59,8 +59,32 @@ async def receive_message(request: Request):
             rasa_responses = await send_message_to_rasa(sender_id, user_message)
             
             for response in rasa_responses:
-                print(f"🤖 [TIKTOK DM] Bot responde: {response.get('text')}")
-                # TODO: Petición HTTP a la API de TikTok para enviar la respuesta usando `token_a_usar`.
+                texto_respuesta = response.get('text')
+                print(f"🤖 [TIKTOK DM] Bot responde: {texto_respuesta}")
+                
+                if token_a_usar:
+                    # Hacemos la petición a la API de TikTok para enviar el mensaje de vuelta
+                    # (Nota: La URL exacta puede variar según la versión de la API de TikTok, asegúrate de verificar en tu portal)
+                    url_tiktok = "https://open.tiktokapis.com/v2/im/message/send/"
+                    headers = {
+                        "Authorization": f"Bearer {token_a_usar}",
+                        "Content-Type": "application/json"
+                    }
+                    payload = {
+                        "recipient_id": sender_id,  # A quién le respondemos
+                        "msg_type": "TEXT",
+                        "content": json.dumps({"text": texto_respuesta})
+                    }
+                    
+                    import httpx
+                    async with httpx.AsyncClient() as client:
+                        try:
+                            res = await client.post(url_tiktok, json=payload, headers=headers)
+                            print(f"✅ Respuesta enviada a TikTok. Status: {res.status_code}")
+                            if res.status_code != 200:
+                                print(f"Detalle del error de TikTok: {res.text}")
+                        except Exception as e:
+                            print(f"❌ Error al intentar enviar mensaje a TikTok: {e}")
     else:
         print("Recibido evento desconocido de TikTok:", body)
 
